@@ -96,42 +96,51 @@ READ_VCOM_VALUE                             = 0x81
 VCM_DC_SETTING                              = 0x82
 
 class EPD:
-    def __init__(self):
-        self.reset_pin = epdconfig.RST_PIN
-        self.dc_pin = epdconfig.DC_PIN
-        self.busy_pin = epdconfig.BUSY_PIN
+    def __init__(self, cover=False):
+        if cover:
+            self.reset_pin = epdconfig.COVER_RST_PIN
+            self.dc_pin = epdconfig.COVER_DC_PIN
+            self.busy_pin = epdconfig.COVER_BUSY_PIN
+            self.cs_pin = epdconfig.COVER_CS_PIN
+        else:
+            self.reset_pin = epdconfig.PAGE_RST_PIN
+            self.dc_pin = epdconfig.PAGE_DC_PIN
+            self.busy_pin = epdconfig.PAGE_BUSY_PIN
+            self.cs_pin = epdconfig.PAGE_CS_PIN
+
+        self.cover = cover
         self.width = EPD_WIDTH
         self.height = EPD_HEIGHT
-    
+
     # Hardware reset
     def reset(self):
         epdconfig.digital_write(self.reset_pin, GPIO.HIGH)
-        epdconfig.delay_ms(200) 
+        epdconfig.delay_ms(200)
         epdconfig.digital_write(self.reset_pin, GPIO.LOW)         # module reset
         epdconfig.delay_ms(200)
         epdconfig.digital_write(self.reset_pin, GPIO.HIGH)
-        epdconfig.delay_ms(200)   
+        epdconfig.delay_ms(200)
 
     def send_command(self, command):
         epdconfig.digital_write(self.dc_pin, GPIO.LOW)
-        epdconfig.spi_writebyte([command])
+        epdconfig.spi_writebyte(self.cs_pin, [command])
 
     def send_data(self, data):
         epdconfig.digital_write(self.dc_pin, GPIO.HIGH)
-        epdconfig.spi_writebyte([data])
-        
+        epdconfig.spi_writebyte(self.cs_pin, [data])
+
     def wait_until_idle(self):
         print("e-Paper busy")
         while(epdconfig.digital_read(self.busy_pin) == 0):      # 0: idle, 1: busy
-            epdconfig.delay_ms(100)    
+            epdconfig.delay_ms(100)
         print("e-Paper busy release")
-        
+
     def init(self):
-        if (epdconfig.module_init() != 0):
+        if (epdconfig.module_init(self.cover) != 0):
             return -1
         # EPD hardware init start
         self.reset()
-        
+
         self.send_command(POWER_SETTING)
         self.send_data(0x37)
         self.send_data(0x00)
@@ -161,7 +170,7 @@ class EPD:
         self.send_data(0x1E)      #decide by LUT file
         self.send_command(0xe5)           #FLASH MODE
         self.send_data(0x03)
-        
+
         # EPD hardware init end
         return 0
 
@@ -186,7 +195,7 @@ class EPD:
             for y in range(imheight):
                 for x in range(imwidth):
                     newx = y
-                    newy = self.height - x - 1                    
+                    newy = self.height - x - 1
                     if pixels[x, y] < 64:           # black
                         buf[(newx + newy*self.width) / 4] &= ~(0xC0 >> (y % 4 * 2))
                     elif pixels[x, y] < 192:     # convert gray to red
@@ -194,8 +203,8 @@ class EPD:
                         buf[(newx + newy*self.width) / 4] |= 0x40 >> (y % 4 * 2)
                     else:                           # white
                         buf[(newx + newy*self.width) / 4] |= 0xC0 >> (y % 4 * 2)
-        return buf    
-        
+        return buf
+
     def display(self, image):
         self.send_command(DATA_START_TRANSMISSION_1)
         for i in range(0, self.width / 4 * self.height):
@@ -223,7 +232,7 @@ class EPD:
         self.send_command(DISPLAY_REFRESH)
         epdconfig.delay_ms(100)
         self.wait_until_idle()
-        
+
     def Clear(self, color):
         self.send_command(DATA_START_TRANSMISSION_1)
         for i in range(0, self.width / 4 * self.height):
