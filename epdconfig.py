@@ -45,7 +45,7 @@ PAGE_CS_PIN          = 8
 PAGE_BUSY_PIN        = 24
 
 COVER_RST_PIN         = 27
-COVER_DC_PIN          = 24
+COVER_DC_PIN          = 22
 COVER_CS_PIN          = 7
 COVER_BUSY_PIN        = 23
 
@@ -56,7 +56,7 @@ def digital_write(pin, value):
     GPIO.output(pin, value)
 
 def digital_read(pin):
-    return GPIO.input(BUSY_PIN)
+    return GPIO.input(pin)
 
 def delay_ms(delaytime):
     time.sleep(delaytime / 1000.0)
