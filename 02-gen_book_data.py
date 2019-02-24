@@ -73,3 +73,15 @@ for book in structured_data:
     final_data.append(book)
     pickle.dump(final_data, open('models/book_metadata.pkl', 'wb'))
 
+for book in final_data:
+    del book['text']
+    book['interested'] = False
+    book['not_interested'] = False
+    book['completed'] = False
+    book['days_shown'] = 0
+    book['days_interacted'] = 0
+    book['pages_per_interaction_day'] = 0
+    book['time_per_interaction_day'] = 0
+    book['pickups_per_interaction_day'] = 0
+
+pickle.dump(final_data, open('models/simple_book_metadata.pkl', 'wb'))

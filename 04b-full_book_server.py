@@ -6,10 +6,76 @@ from flask_restful import Api, Resource, reqparse
 
 import cPickle as pickle
 import json
+import time
+
+
+# load models
+# load state (books and page)
+# connect to eink display #1 and #2
+# set title
+# load book function (render cover, get current page, render page)
+# randomly choose and load a book
+# change page forward/back function (log activity, save current page)
+
+
+# serve an API to:
+#   -get all books in huxley
+#   -get history of interactions
+#   -force huxley to be a book by title
+#   -force huxley to be a book given a query
+#   -force huxley new random book
+#   -force huxley to update based on rules and query
+#   ----load interaction history.
+#   ----parse each book (#days shown, #days interacted, array of pages viewed
+#   per interaction day, array of time spent per interaction day, array of
+#   # pick-ups per interaction day (timeout ~15min)
+#   ----shown/unknown if interested (no pickups), amount of days is inversely proportional
+#   to selection probability. Expire in 24 hours.
+#   ----show/interested but book likely bad. Only read for a short duration
+#   once. Expire in 24 hours.
+#   ----shown/interested and reading.
+#   ---- if current book interacted with for a long duration or >1 pickup, timeout = 72
+#   hours.
+#   ---- if current book is timed out, likely bad book gets small probability
+#   two weeks from previous exposure.
+#   ---- current book, currentInterested =True means expire in 72 not 24 hours, if
+#   interested=False expire in 24 hours, update timestamp based on switch to
+#   book or last interaction.  Always tart at currentInterest=False and track
+#   interactions in cache.
+#   ---- probabilities - shown/unknown interest has probability proportional to
+#   1/days shown, likely uninterested has no probability for 2 weeks, and then
+#   small probability, likely interested has probability equal to 0 days of
+#   being shown.
+
+
+#every interaction, update state, update lastinteraction, set timeout for no activity and end of session
+
+# button press monitor:
+# short - move forward a page, log activity
+# long - move back a page, log activity
 
 TEXT_MODEL = 'models/texts_temp.model'
 TITLE_MODEL = 'models/titles_temp.model'
 PDF_DATABASE = 'models/pdf_database.pkl'
+
+BOOK_METADATA = 'models/simple_book_metadata.pkl'
+
+#['time_per_interaction_day',
+# 'last_accessed',
+# 'not_interested',
+# 'pickups_per_interaction_day',
+# 'cover_page',
+# 'completed',
+# 'current_page',
+# 'days_interacted',
+# 'days_shown',
+# 'first_page',
+# 'interested',
+# 'title_print',
+# 'file',
+# 'pages_per_interaction_day',
+# 'title',
+# 'author_print']
 
 TITLE_WEIGHTING = 0.2
 
@@ -17,6 +83,15 @@ TITLE_WEIGHTING = 0.2
 app = Flask(__name__)
 api = Api(app)
 
+current_state = {
+        'current_interest': False,
+        'book_completed': False,
+        'last_accessed': time.time(),
+        'pickups': 0,
+        'time_used': 0,
+        'book_index': None,
+        'book': None
+        }
 
 print 'loading models...'
 text_model= Doc2Vec.load(TEXT_MODEL)
