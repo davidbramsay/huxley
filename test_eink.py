@@ -5,64 +5,34 @@ import epd7in5
 import time
 from PIL import Image,ImageDraw,ImageFont
 import traceback
+import os
 
 try:
-    epd = epd7in5.EPD()
-    epd.init()
-    print("Clear")
-    epd.Clear(0xFF)
 
-    print("Drawing")
-    # Drawing on the Horizontal image
-    Himage = Image.new('1', (epd7in5.EPD_WIDTH, epd7in5.EPD_HEIGHT), 255)  # 255: clear the frame
-    draw = ImageDraw.Draw(Himage)
-    font24 = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 24)
-    draw.text((10, 0), 'hello world', font = font24, fill = 0)
-    draw.text((10, 20), '7.5inch e-Paper', font = font24, fill = 0)
-    draw.text((150, 0), u'������������', font = font24, fill = 0)
-    draw.line((20, 50, 70, 100), fill = 0)
-    draw.line((70, 50, 20, 100), fill = 0)
-    draw.rectangle((20, 50, 70, 100), outline = 0)
-    draw.line((165, 50, 165, 100), fill = 0)
-    draw.line((140, 75, 190, 75), fill = 0)
-    draw.arc((140, 50, 190, 100), 0, 360, fill = 0)
-    draw.rectangle((80, 50, 130, 100), fill = 0)
-    draw.chord((200, 50, 250, 100), 0, 360, fill = 0)
-    epd.display(epd.getbuffer(Himage))
-    time.sleep(2)
+    title = "THIS TITLE 2"
+    os.system('ssh pi@raspberrypi.local \'./papirus-fill.py "' + title + '"\'')
 
-    # Drawing on the Vertical image
-    Limage = Image.new('1', (epd7in5.EPD_HEIGHT, epd7in5.EPD_WIDTH), 255)  # 255: clear the frame
-    draw = ImageDraw.Draw(Limage)
-    font18 = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 18)
-    draw.text((2, 0), 'hello world', font = font18, fill = 0)
-    draw.text((2, 20), '7.5inch epd', font = font18, fill = 0)
-    draw.text((20, 50), u'������������', font = font18, fill = 0)
-    draw.line((10, 90, 60, 140), fill = 0)
-    draw.line((60, 90, 10, 140), fill = 0)
-    draw.rectangle((10, 90, 60, 140), outline = 0)
-    draw.line((95, 90, 95, 140), fill = 0)
-    draw.line((70, 115, 120, 115), fill = 0)
-    draw.arc((70, 90, 120, 140), 0, 360, fill = 0)
-    draw.rectangle((10, 150, 60, 200), fill = 0)
-    draw.chord((70, 150, 120, 200), 0, 360, fill = 0)
-    epd.display(epd.getbuffer(Limage))
-    time.sleep(2)
+    '''
+    epd_page = epd7in5.EPD(cover=False)
+    epd_page.init()
+    
+    print "read bmp file"
+    Himage = Image.open('test2.bmp')
+    epd_page.display(epd_page.getbuffer(Himage))
+
+    epd_page.sleep()
+    '''
+
+    epd_cover = epd7in5.EPD(cover=True)
+    epd_cover.init()
 
     print "read bmp file"
-    Himage = Image.open('7in5.bmp')
-    epd.display(epd.getbuffer(Himage))
-    time.sleep(2)
+    Himage = Image.open('test3.bmp')
+    epd_cover.display(epd_cover.getbuffer(Himage))
 
-    print "read bmp file on window"
-    Himage2 = Image.new('1', (epd7in5.EPD_WIDTH, epd7in5.EPD_HEIGHT), 255)  # 255: clear the frame
-    bmp = Image.open('100x100.bmp')
-    Himage2.paste(bmp, (50,10))
-    epd.display(epd.getbuffer(Himage2))
-    time.sleep(2)
-
-    epd.sleep()
-
+    epd_cover.sleep()
+        
 except:
     print 'traceback.format_exc():\n%s' % traceback.format_exc()
     exit()
+
