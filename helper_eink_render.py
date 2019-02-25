@@ -63,30 +63,10 @@ def make_page(img):
 
 
 def binarize_img(img):
-    #we have 6 params, thats 64 combos
-    img_raw = img
 
-    for i in range(8):
-        for v in [ 100, 128, 150, 175, 200 ]:
-            img = img_raw
+    img = img.filter(ImageFilter.SHARPEN)
+    img = img.point(lambda x: 0 if x<128 else 255, '1')
+    img = img.filter(ImageFilter.SHARPEN)
 
-            if i & 0b1:
-                img = img.filter(ImageFilter.SHARPEN)
-            if i & 0b10:
-                img = img.filter(ImageFilter.SMOOTH)
-
-            img = img.point(lambda x: 0 if x<v else 255, '1')
-
-            if i & 0b100:
-                img = img.filter(ImageFilter.SHARPEN)
-
-            img.convert('1').save('temp/' + str(i) + '-' + str(v) + '.bmp')
-    #return img.convert('1')
-
-
-    #NONE
-    #SHARPEN
-    #SHARPEN/SMOOTH
-
-    # ALL 3 ABOVE + SHARPEN AFTER
+    return img.convert('1')
 

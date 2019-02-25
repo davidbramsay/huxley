@@ -80,8 +80,8 @@ for book in final_data:
     book['completed'] = False
     book['days_shown'] = 0
     book['days_interacted'] = 0
-    book['pages_per_interaction_day'] = 0
-    book['time_per_interaction_day'] = 0
-    book['pickups_per_interaction_day'] = 0
+    book['pages_per_interaction_day'] = []
+    book['time_per_interaction_day'] = []
+    book['pickups_per_interaction_day'] = []
 
 pickle.dump(final_data, open('models/simple_book_metadata.pkl', 'wb'))
